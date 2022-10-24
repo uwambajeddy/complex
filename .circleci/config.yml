@@ -13,7 +13,7 @@ jobs:
             ls client
             ls nginx
             ls server
-            ls Worker
+            ls worker
             cat docker-compose.yml
       - run: cd ./client && npm install && npm run build
       - persist_to_workspace:
