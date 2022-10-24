@@ -10,12 +10,12 @@ jobs:
           name: checkout files directory
           command: |
             ls 
-            ls client
+            ls qwert
             ls nginx
             ls server
             ls worker
             cat docker-compose.yml
-      - run: cd ./client && npm install && npm run build
+      - run: cd ./qwert && npm install && npm run build
       - persist_to_workspace:
           root: .
           paths:
@@ -28,7 +28,7 @@ jobs:
       - attach_workspace:
           at: .
       - checkout
-      - run: cd ./client && npm run test
+      - run: cd ./qwert && npm run test
       - persist_to_workspace:
           root: .
           paths:
@@ -46,11 +46,11 @@ jobs:
           at: .
       - checkout
       - run:
-          name: "Build Docker Image Client"
+          name: "Build Docker Image qwert"
           command: |
             export TAG='0.1.<< pipeline.number >>'
-            export IMAGE_NAME=client
-            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./client
+            export IMAGE_NAME=qwert
+            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./qwert
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push -a $DOCKER_LOGIN/$IMAGE_NAME
       - run:
