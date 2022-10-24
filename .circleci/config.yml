@@ -8,10 +8,7 @@ jobs:
       - checkout
       - run:
           name: checkout files directory
-          command: |
-            ls
-            cd client
-            ls
+          command: ls client
       - run: cd ./client && npm install && npm run build
       - persist_to_workspace:
           root: .
