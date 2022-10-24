@@ -1,0 +1,39 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "containerDEfinitions": [
+        {
+            "name": "client",
+            "image": "eddy/multi-client",
+            "hostname": "client",
+            "essentials": false
+        },
+        {
+            "name": "api",
+            "image": "eddy/multi-server",
+            "hostname": "api",
+            "essentials": false
+        },
+        {
+            "name": "worker",
+            "image": "eddy/multi-worker",
+            "hostname": "worker",
+            "essentials": false
+        },
+        {
+            "name": "nginx",
+            "image": "eddy/multi-nginx",
+            "hostname": "nginx",
+            "essentials": true,
+            "portMappings": [
+                {
+                    "hostPort": 80,
+                    "containerPort": 80
+                }
+            ],
+            "links": [
+                "client",
+                "server"
+            ]
+        }
+    ]
+}

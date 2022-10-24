@@ -1,0 +1,102 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.2.0
+commands:
+  install_terraform:
+    description: "specify terraform version & architecture to use [amd64 or arm64]"
+    parameters:
+      version:
+        type: string
+        default: "0.13.5"
+      arch:
+        type: string
+        default: "arm64"
+    steps:
+      - run:
+          name: Install Terraform client
+          command: |
+            cd /tmp
+            wget https://releases.hashicorp.com/terraform/<<
+              parameters.version >>/terraform_<<
+              parameters.version >>_linux_<< 
+              parameters.arch >>.zip
+            unzip terraform_<< parameters.version >>_linux_<<
+              parameters.arch >>.zip
+            sudo mv terraform /usr/local/bin
+jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run: cd ./client && npm install && npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  run-tests:
+    machine:
+      image: ubuntu-2004:202101-01
+    steps:
+      - attach_workspace:
+          at: .
+      - checkout
+      - run: cd ./ && npm run test
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+  build_docker_images:
+    machine:
+      image: ubuntu-2004:202101-01
+    steps:
+      - attach_workspace:
+          at: .
+      - checkout
+      - run:
+          name: "Build Docker Image Client"
+          command: |
+            export TAG='0.1.<< pipeline.number >>'
+            export IMAGE_NAME=client
+            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./client
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push -a $DOCKER_LOGIN/$IMAGE_NAME
+      - run:
+          name: "Build Docker Image Server"
+          command: |
+            export TAG='0.1.<< pipeline.number >>'
+            export IMAGE_NAME=server
+            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./server
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push -a $DOCKER_LOGIN/$IMAGE_NAME
+      - run:
+          name: "Build Docker Image Nginx"
+          command: |
+            export TAG='0.1.<< pipeline.number >>'
+            export IMAGE_NAME=nginx
+            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./nginx
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push -a $DOCKER_LOGIN/$IMAGE_NAME
+      - run:
+          name: "Build Docker Image Worker"
+          command: |
+            export TAG='0.1.<< pipeline.number >>'
+            export IMAGE_NAME=worker
+            docker build -t $DOCKER_LOGIN/$IMAGE_NAME -t $DOCKER_LOGIN/$IMAGE_NAME:$TAG ./worker
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push -a $DOCKER_LOGIN/$IMAGE_NAME
+workflows:
+  build:
+    jobs:
+      - build
+      - run-tests:
+          requires:
+            - build
+      - build_docker_images:
+          requires:
+            - run-tests
