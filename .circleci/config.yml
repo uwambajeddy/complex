@@ -6,9 +6,6 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run:
-          name: checkout files directory
-          command: ls
       - run: cd ./client && npm install && npm run build
       - persist_to_workspace:
           root: .
@@ -22,7 +19,7 @@ jobs:
       - attach_workspace:
           at: .
       - checkout
-      - run: cd ./ && npm run test
+      - run: cd ./client && npm run test
       - persist_to_workspace:
           root: .
           paths:
