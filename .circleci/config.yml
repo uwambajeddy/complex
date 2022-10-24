@@ -1,42 +1,11 @@
 version: 2.1
 
-orbs:
-  node: circleci/node@4.2.0
-commands:
-  install_terraform:
-    description: "specify terraform version & architecture to use [amd64 or arm64]"
-    parameters:
-      version:
-        type: string
-        default: "0.13.5"
-      arch:
-        type: string
-        default: "arm64"
-    steps:
-      - run:
-          name: Install Terraform client
-          command: |
-            cd /tmp
-            wget https://releases.hashicorp.com/terraform/<<
-              parameters.version >>/terraform_<<
-              parameters.version >>_linux_<< 
-              parameters.arch >>.zip
-            unzip terraform_<< parameters.version >>_linux_<<
-              parameters.arch >>.zip
-            sudo mv terraform /usr/local/bin
 jobs:
   build:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run:
-          name: Installing AWS CLI
-          command: |
-            sudo apt-get update
-            sudo apt install python3-pip
-            sudo pip3 install awsebcli --upgrade
-      - run: cd ./client && npm install && npm run build
       - run:
           name: checkout files directory
           command: ls
