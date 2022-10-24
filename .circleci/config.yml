@@ -11,6 +11,7 @@ jobs:
           command: |
             ls
             cd client
+            ls
       - run: cd ./client && npm install && npm run build
       - persist_to_workspace:
           root: .
